@@ -1,10 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const todoHandler = require("./RouteHandler/routeHandler");
 
 // express app initialization
 const app = express();
 app.use(express.json());
-const todoHandler = require("./RouteHandler/routeHandler");
 
 // database connection with mongoose
 mongoose
@@ -16,9 +16,9 @@ mongoose
   .catch((err) => console.log(err));
 
 
-  app.get("/",async (req,res)=>{
-    res.send('hello')
-  })
+app.get("/", async (req, res) => {
+  res.send('hello')
+})
 
 // application routes
 app.use("/todo", todoHandler);
