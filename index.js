@@ -16,9 +16,7 @@ mongoose
   .catch((err) => console.log(err));
 
 
-app.get("/", async (req, res) => {
-  res.send('hello')
-})
+
 
 // application routes
 app.use("/todo", todoHandler);
