@@ -1,82 +1,116 @@
-const express = require("express");
-const mongoose = require("mongoose");
+const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
-const todoSchema = require("../Schemas/todoSchema");
-const Todo = new mongoose.model("Todo", todoSchema);
+const todoSchema = require('../Schemas/todoSchema');
+const Todo = new mongoose.model("Todo", todoSchema)
+
 
 // GET ALL THE TODOS
 router.get("/", async (req, res) => {
-  try {
-    const doc = await Todo.find();
-    res.status(200).json({
-      result: doc,
-      message: "Success",
+  await Todo.find()
+   
+    .exec((err, data) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server side error!",
+        });
+      } else {
+        res.status(200).json({
+          result: data,
+          message: "Success",
+        });
+      }
     });
-  } catch (error) {
-    res.status(500).json({
-      error: "There was a server side error!",
-    });
-  }
 });
 // POST A TODO
 router.post("/", async (req, res) => {
-  try {
-    await Todo.create(req.body);
-    res.status(201).json({
-      message: "Todo was inserted successfully!",
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: "There was a server side error!",
-    });
-  }
+  const newTodo = new Todo(req.body);
+  await newTodo.save((err) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server side error!",
+      });
+    } else {
+      res.status(200).json({
+        message: "Todo was inserted successfully!",
+      });
+    }
+  });
 });
 
 // GET A TODO by ID
 router.get("/:id", async (req, res) => {
-  try {
-    const doc = await Todo.find({ _id: req.params.id });
-    res.status(200).json({ doc, message: "Success" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to find doc" });
-  }
+  await Todo.find({ _id: req.params.id }, (err, data) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server side error!",
+      });
+    } else {
+      res.status(200).json({
+        result: data,
+        message: "Success",
+      });
+    }
+  });
 });
 // Post of multiple todo
 router.post("/multiple", async (req, res) => {
-  try {
-    await Todo.insertMany(req.body);
-    res.status(201).json({ message: "Data inserted" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to insert data" });
-  }
+  await Todo.insertMany(req.body, (err) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server side error!",
+      });
+    } else {
+      res.status(200).json({
+        message: "Todo were inserted successfully!",
+      });
+    }
+  })
 });
+
 
 // put of update todo
-router.patch("/update/:id", async (req, res) => {
-  try {
-    const result = await Todo.findByIdAndUpdate(
-      req.params.id,
-      { status: "active" },
-
-      {
-        new: true,
-        useFindAndModify: false,
+router.put("/update/:id", async (req, res) => {
+  const result = await Todo.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $set: {
+        status: "active",
+      },
+    },
+    {
+      new: true,
+      useFindAndModify: false,
+    },
+    (err) => {
+      if (err) {
+        res.status(500).json({
+          error: "There was a server side error!",
+        });
+      } else {
+        res.status(200).json({
+          message: "Todo was updated successfully!",
+        });
       }
-    );
-    res.status(200).json({ doc: result, message: "Data updated" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to update data" });
-  }
+    }
+  );
+  console.log(result);
 });
 
-// delete todo
+
+// delete todo 
 router.delete("/delete/:id", async (req, res) => {
-  try {
-    await Todo.findByIdAndDelete(req.params.id);
-    res.status(202).json({ message: "Data deleted" });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to delete data" });
-  }
-});
+  await Todo.deleteOne({ _id: req.params.id }, (err) => {
+    if (err) {
+      res.status(500).json({
+        error: "There was a server side error!",
+      });
+    } else {
+      res.status(200).json({
+        message: "Todo was deleted successfully!",
+      });
+    }
+  });
+})
 
 module.exports = router;
